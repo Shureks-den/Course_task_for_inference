@@ -1,0 +1,91 @@
+---
+title: "Statistical Inference"
+author: "Alexander Klonov"
+date: "07 09 2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction 
+
+This task requires to do some explanatory analysis and make conclusions about data we have. The data for task is ToothGrowth 
+
+## Explanotory analysis
+
+First we need to load data:
+```{r}
+data(ToothGrowth)
+library(ggplot2)
+```
+Look for dimensions and collum names:
+```{r}
+dim(ToothGrowth)
+names(ToothGrowth)
+head(ToothGrowth)
+```
+And finally let's look through summary
+```{r}
+summary(ToothGrowth)
+```
+
+### Quick graphs
+
+To finish explanatory analyses, we need to build up a couple graphs. First will be a graph showing conection between supplement type and teeth length.
+
+```{r}
+g<-ggplot(data = ToothGrowth, aes(len, colour = supp))+geom_boxplot()
+g+ggtitle("Connection between different supplement and length")
+```
+
+And then let's add more data to this graph to see if there any connection between dose and teeth length.
+
+```{r}
+g<-ggplot(data= ToothGrowth, aes(len, dose, shape = supp, col = supp))+
+  geom_point(size = 4)+
+  facet_grid(supp~.)
+g+
+  ggtitle("Connection between doses and teeth length based on the supplements")+
+  geom_smooth(method = "lm")
+```
+
+### Statistical inference 
+
+Let's assume that type of the supplement doesn't affect teeth length. To reject or fail to reject this theory let's conduct a t test.
+
+```{r}
+Ojlen<-ToothGrowth[1:30,1] ## length by oj
+Vclen<-ToothGrowth[31:60,1] ## length by Vc
+
+t.test(Ojlen, Vclen, paired = TRUE)
+```
+Based on this test means in two supplements are not equal, as 95 percent confidence interval doesn't include 0 and t value is quite high.
+
+Let's do the same, only based on suplement dose:
+
+```{r}
+
+dose05<-subset(ToothGrowth, dose == 0.5)[,1]
+dose1<-subset(ToothGrowth, dose == 1)[,1]
+dose2<-subset(ToothGrowth, dose == 2)[,1]
+
+
+t.test(dose2,dose1, paired = TRUE)$conf
+```
+Doubled dozes and normal appears to differ.
+```{r}
+t.test(dose2,dose05,paired = TRUE)$conf
+```
+
+Difference between halfed and doubled dozes even stronger.
+
+```{r}
+t.test(dose1,dose05,paired = TRUE)$conf
+```
+And normal dozes and small doesn't appears to be same.
+
+## Conslusion 
+
+We made a assumptions (null hypothesizes), that teeth length doesn't based on type of supplement and its dose. However, t test showed, that all these hypothesizes were reject. Based on this information, we can assume that teeth length does base on the supplement type and its doze.
